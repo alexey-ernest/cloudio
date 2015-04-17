@@ -4,8 +4,21 @@ Scans all of your music and uploads it to the cloud.
 
 from os import walk, path
 import sys
+import platform
 
-PATH = r'c:/'
+PATH = r'c:/' if platform.system().lower().startswith('Windows') else r'/'
+EXTENSIONS = {'mp3', 'm4a'}
+EXCLUDE_DIRS = {
+    # windows
+    r'c:/windows',
+    r'c:/program files',
+
+    # mac os
+    r'/applications',
+    r'/library',
+    r'/system/library',
+    r'/private'
+}
 
 def main():
     """
@@ -29,10 +42,14 @@ def scan_path(path_name):
         Yields music files as soon as found.
     """
 
-    extensions = {'mp3', 'm4a'}
-
     for dirpath, dirnames, filenames in walk(path_name):
-        music_files = [f for f in filenames if path.splitext(f)[1][1:] in extensions]
+        # skip system dirs
+        if dirpath.lower() in EXCLUDE_DIRS:
+            dirnames[:] = []
+            continue
+
+        # filter music files
+        music_files = [f for f in filenames if path.splitext(f)[1][1:] in EXTENSIONS]
         for music_filename in music_files:
             yield path.join(dirpath, music_filename)
 
