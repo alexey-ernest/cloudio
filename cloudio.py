@@ -6,7 +6,6 @@ from os import walk, path
 import sys
 import platform
 
-PATH = r'c:/' if platform.system().lower().startswith('Windows') else r'/'
 EXTENSIONS = {'mp3', 'm4a'}
 EXCLUDE_DIRS = {
     # windows
@@ -20,29 +19,28 @@ EXCLUDE_DIRS = {
     r'/private'
 }
 
-def main():
+def sync(dir_path):
     """
     Entry point.
+
+    Args:
+        dir_path: directory to scan.
     """
 
-    if len(sys.argv) > 1:
-    	global PATH
-        PATH = sys.argv[1]
-
-    for filename in scan_path(PATH):
+    for filename in _scan(dir_path):
         print filename
 
-def scan_path(path_name):
+def _scan(dir_path):
     """Scans path for music files.
 
     Args:
-        path_name: directory path to scan.
+        dir_path: directory path to scan.
 
     Returns:
         Yields music files as soon as found.
     """
 
-    for dirpath, dirnames, filenames in walk(path_name):
+    for dirpath, dirnames, filenames in walk(dir_path):
         # skip system dirs
         if dirpath.lower() in EXCLUDE_DIRS:
             dirnames[:] = []
@@ -54,4 +52,7 @@ def scan_path(path_name):
             yield path.join(dirpath, music_filename)
 
 if __name__ == '__main__':
-    main()
+    DIR_PATH = r'c:/' if platform.system().lower().startswith('Windows') else r'/'
+    if len(sys.argv) > 1:
+        DIR_PATH = sys.argv[1]
+    sync(DIR_PATH)
